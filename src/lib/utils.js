@@ -1,5 +1,5 @@
 export { cn } from "cn";
-import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { format, formatDistanceToNow, parseISO, startOfToday } from "date-fns";
 
 export function formatPrice(amount, currency = "INR") {
   const value = Number(amount);
@@ -54,3 +54,4 @@ export function getDaysRemaining(startDate) {
 
   return formatDistanceToNow(eventDate, { addSuffix: true });
 }
+
