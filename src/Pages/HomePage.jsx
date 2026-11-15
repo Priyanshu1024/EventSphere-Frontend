@@ -111,7 +111,7 @@ function HomePage() {
           "https://eventsphere-server-mfdb.onrender.com/api/events?limit=8&sort=startDate&order=asc",
         );
         setTrendingEvents(data);
-        console.log(data);
+        
       } catch (error) { }
 
       setIsLoading(false);

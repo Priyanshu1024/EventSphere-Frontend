@@ -29,16 +29,12 @@ export default function EventDetailsPage() {
     async function fetchEvent() {
       setIsLoading(true);
       try {
-        let {
-          data: { data },
-        } = await api.get(
-          `https://eventsphere-server-mfdb.onrender.com/api/events/${slug}`,
+        let data = await api.get(
+          `/api/events/${slug}`,
         );
         setEvent(data);
-        let {
-          data: { data : reviews},
-        } = await api.get(
-          `https://eventsphere-server-mfdb.onrender.com/api/events/${data.id || data._id}/reviews`,
+        let reviews = await api.get(
+          `/api/events/${data.id || data._id}/reviews`,
         );
        
         setReviews(reviews);
