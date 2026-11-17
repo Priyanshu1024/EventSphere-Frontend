@@ -1,10 +1,13 @@
 import { formatEventDate, formatPrice } from "@/lib/utils";
+import { toggleFavorites } from "@/store/slice/favouriteSlice";
 import { Bookmark, Calendar, Save, SaveIcon } from "lucide-react";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router";
 
 
 export default function EventCard({event}) {
     const {image , description ,format , price , registeredCount , title , city ,isFree , isPaid , startDate , category : {name} , slug} = event
+    const dispatch = useDispatch()
   return (
     <Link
       to={`/events/${slug}`}
@@ -28,6 +31,10 @@ export default function EventCard({event}) {
             {/* Bookmark button */}
             <button
               type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                dispatch(toggleFavorites())
+              }}
               className="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-black/5 flex items-center justify-center hover:bg-white hover:scale-110 active:scale-95 transition-all text-stone-700 hover:text-stone-900 cursor-pointer text-xs"
             >
               <Bookmark/>
