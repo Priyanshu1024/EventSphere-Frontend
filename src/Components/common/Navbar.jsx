@@ -12,10 +12,12 @@ import {
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from "../ui/button";
+import { useSelector } from "react-redux";
 
 
 function Navbar() {
   const [isMobileMenuOpen , setisMobileMenuOpen] = useState(false)
+  const favourites = useSelector((state) => state.favourites.items)
   return (
     <div className='sticky top-0 z-100  w-full bg-[#FAF9F5]/90 backdrop-blur-md border-b border-[#EBE8DF]'>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-18">
@@ -57,6 +59,9 @@ function Navbar() {
           >
             <Bookmark className="w-4 h-4" />
             <span>Saved</span>
+            {favourites.length > 0 && <span className="w-5 h-5 rounded-full bg-orange-100 text-[#E65100] text-[11px] font-bold flex items-center justify-center">
+                  {favourites.length}
+                </span> }
           </Link>
 
           <Link
@@ -111,7 +116,7 @@ function Navbar() {
         </div>
       </div>
        {isMobileMenuOpen && <div className="md:hidden border-t  border-[#EBE8DF] bg-[#FAF9F5] px-4 pt-3 pb-6 space-y-4">
-        <form action="" className="relative">
+        <form action="" onSubmit={(e) => e.preventDefault()} className="relative">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"

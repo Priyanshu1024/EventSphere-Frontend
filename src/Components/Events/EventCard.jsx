@@ -1,13 +1,24 @@
 import { formatEventDate, formatPrice } from "@/lib/utils";
 import { toggleFavorites } from "@/store/slice/favouriteSlice";
 import { Bookmark, Calendar, Save, SaveIcon } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
 
 
-export default function EventCard({event}) {
-    const {image , description ,format , price , registeredCount , title , city ,isFree , isPaid , startDate , category : {name} , slug} = event
-    const dispatch = useDispatch()
+export default function EventCard({ event }) {
+  const { image, description, format, price, registeredCount, title, city, isFree, isPaid, startDate, category: { name }, slug } = event
+  const dispatch = useDispatch()
+
+ function handleFavourites(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  dispatch(toggleFavorites(event));
+}
+ const isFavorite = useSelector((state) =>
+  state.favourites.items.some(
+    (e) => (e.id || e._id) === (event.id || event._id)
+  )
+);
   return (
     <Link
       to={`/events/${slug}`}
@@ -31,13 +42,17 @@ export default function EventCard({event}) {
             {/* Bookmark button */}
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                dispatch(toggleFavorites())
-              }}
+              onClick={handleFavourites}
               className="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-black/5 flex items-center justify-center hover:bg-white hover:scale-110 active:scale-95 transition-all text-stone-700 hover:text-stone-900 cursor-pointer text-xs"
             >
-              <Bookmark/>
+             <Bookmark
+                className={`w-4 h-4 transition-colors ${
+                  isFavorite
+                    ? "fill-[#E65100] text-[#E65100]"
+                    : "text-stone-600"
+                }`}
+              />
+
             </button>
           </div>
         </div>
@@ -46,7 +61,7 @@ export default function EventCard({event}) {
         <div className="p-4 space-y-2">
           {/* Date & Location */}
           <div className="flex items-center gap-2 text-xs font-semibold text-[#C2410C]">
-            <Calendar className="w-4 h-4"/>
+            <Calendar className="w-4 h-4" />
             <span>{formatEventDate(startDate)}</span>
             <span className="text-stone-300 font-normal">•</span>
             <span className="text-stone-500 font-normal truncate">{city}</span>

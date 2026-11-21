@@ -1,8 +1,10 @@
 import EventReviewSection from "@/Components/Events/EventReviewSection";
 import api from "@/lib/axios";
-import { formatEventDate, formatEventTimeRange } from "@/lib/utils";  
+import { formatEventDate, formatEventTimeRange, formatPrice, getDaysRemaining } from "@/lib/utils";
+import { toggleFavorites } from "@/store/slice/favouriteSlice";
 import { Bookmark, Calendar, Check, CheckCircle, CheckCircle2, Clock, Group, MapPin, Share2, ShieldCheck, ShieldCheckIcon, Sparkle, Sparkles, User, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -16,14 +18,29 @@ export default function EventDetailsPage() {
   const { slug } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [event, setEvent] = useState([]);
-  const [reviews , setReviews] = useState([])
-  
+  const [reviews, setReviews] = useState([])
+  const isFavorite = useSelector((state) =>
+    state.favourites.items.some(   // ✅ match store key
+      (e) => (e.id || e._id) === (event.id || event._id),
+    ),
+  );
 
-   function handleShare(){
+  const dispatch = useDispatch();
+
+  function handleShare() {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Event link copied to clipboard!")
   }
 
+  const handleSave = () => {
+    if (!event?._id && !event?.id) return;
+    dispatch(toggleFavorites(event));
+    toast.success(isFavorite ? "Removed from saved" : "Saved!");
+  };
+
+
+
+  
 
   useEffect(() => {
     async function fetchEvent() {
@@ -36,14 +53,16 @@ export default function EventDetailsPage() {
         let reviews = await api.get(
           `/api/events/${data.id || data._id}/reviews`,
         );
-       
+
         setReviews(reviews);
-      } catch (error) {}
+      } catch (error) { }
 
       setIsLoading(false);
     }
     fetchEvent();
   }, []);
+
+
 
   if (isLoading) {
     return (
@@ -62,7 +81,13 @@ export default function EventDetailsPage() {
     );
   }
 
+
+  
+
   return (
+
+    <>
+    
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-24">
       <div className="flex items-center justify-between">
         <Link
@@ -87,12 +112,16 @@ export default function EventDetailsPage() {
 
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer bg-white border-[#DDD9CE] hover:bg-stone-50 text-stone-700"
+            onClick={handleSave}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${isFavorite
+                ? "bg-orange-50 border-orange-200 text-[#E65100]"
+                : "bg-white border-[#DDD9CE] hover:bg-stone-50 text-stone-700"
+              }`}
           >
-            <span>
-              <Bookmark className="w-4 h-4" />
-            </span>
-            <span>Save</span>
+            <Bookmark
+              className={`w-3.5 h-3.5 ${isFavorite ? "fill-[#E65100]" : ""}`}
+            />
+            <span>{isFavorite ? "Saved" : "Save"}</span>
           </button>
         </div>
       </div>
@@ -120,7 +149,7 @@ export default function EventDetailsPage() {
             </span>
             {event.featured && (
               <span className="inline-flex items-center gap-1.5 whitespace-nowrap bg-[#FFF3E0] text-[#B73E00] border border-[#FFE0B2] text-xs px-2.5 py-1 rounded-full font-medium">
-                <span><Sparkles/></span> Featured Pick
+                <span><Sparkles /></span> Featured Pick
               </span>
             )}
           </div>
@@ -131,15 +160,15 @@ export default function EventDetailsPage() {
 
           <div className="flex items-center gap-4 text-xs sm:text-sm text-stone-200 pt-1 flex-wrap font-medium">
             <span className="flex items-center gap-1 text-orange-300 font-semibold">
-              <span><Calendar/></span> {formatEventDate(event?.startDate)}
+              <span><Calendar /></span> {formatEventDate(event?.startDate)}
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <span><Clock/></span> {formatEventTimeRange(event.startDate , event.endDate)}
+              <span><Clock /></span> {formatEventTimeRange(event.startDate, event.endDate)}
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <span><MapPin/></span> {event?.venue}, {event?.city}
+              <span><MapPin /></span> {event?.venue}, {event?.city}
             </span>
           </div>
         </div>
@@ -251,13 +280,13 @@ export default function EventDetailsPage() {
                   Admission Pass
                 </span>
                 <div className="text-3xl font-extrabold text-stone-900 mt-0.5">
-                  ₹1,499
+                  {formatPrice(event.price)}
                 </div>
               </div>
 
               <div className="text-right">
                 <span className="text-xs font-semibold px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg">
-                  11 days left
+                  {getDaysRemaining(event.startDate)}
                 </span>
               </div>
             </div>
@@ -266,17 +295,20 @@ export default function EventDetailsPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-xs text-stone-600">
                 <span className="flex items-center gap-1.5 font-medium">
-                  <Users/> Capacity
+                  <Users /> Capacity
                 </span>
                 <span className="font-bold text-stone-900">
-                  85 of 100 seats filled
+                 {event.registeredCount} of {event.capacity} seats filled
                 </span>
               </div>
               <div className="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
-                <div className="h-full bg-[#E65100] rounded-full transition-all w-[80%]" />
+                <div className="h-full bg-[#E65100] rounded-full transition-all " 
+                style={{
+                    width: `${Math.round((event?.registeredCount / event?.capacity) * 100)}%`,
+                  }} />
               </div>
               <p className="text-[11px] text-stone-400 text-right">
-                15 seats remaining
+                {event.capacity - event.registeredCount} seats remaining
               </p>
             </div>
 
@@ -293,20 +325,20 @@ export default function EventDetailsPage() {
                 type="button"
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium h-10 px-4 py-2 border border-[#CCC8BA] bg-transparent hover:bg-[#F2F1EC] text-[#222] w-full"
               >
-                <Calendar/> Add to My Schedule
+                <Calendar /> Add to My Schedule
               </button>
             </div>
 
             {/* Trust points */}
             <div className="pt-4 border-t border-[#F2EFE8] space-y-2 text-[11px] text-stone-500">
               <div className="flex items-center gap-2">
-                <span className="text-emerald-600"><ShieldCheck/></span>
+                <span className="text-emerald-600"><ShieldCheck /></span>
                 <span>
                   Verified organizer & authentic attendee review policy
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-stone-400"><CheckCircle2/></span>
+                <span className="text-stone-400"><CheckCircle2 /></span>
                 <span>Digital ticket QR sent to your email instantly</span>
               </div>
             </div>
@@ -314,5 +346,6 @@ export default function EventDetailsPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
