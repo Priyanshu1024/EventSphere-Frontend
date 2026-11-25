@@ -111,7 +111,7 @@ function HomePage() {
           "https://eventsphere-server-mfdb.onrender.com/api/events?limit=8&sort=startDate&order=asc",
         );
         setTrendingEvents(data);
-        
+
       } catch (error) { }
 
       setIsLoading(false);
@@ -195,18 +195,11 @@ function HomePage() {
         {
           isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="p-4 rounded-2xl bg-white border border-[#EBE8DF] animate-pulse space-y-3"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-stone-100" />
-                  <div className="space-y-1.5">
-                    <div className="h-3.5 bg-stone-100 rounded w-3/4" />
-                    <div className="h-2.5 bg-stone-100 rounded w-1/2" />
-                  </div>
-                </div>
-              ))}
+              {
+                [...Array(6)].map((i) => (
+                  <Skeleton key={i} />
+                ))
+              }
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
