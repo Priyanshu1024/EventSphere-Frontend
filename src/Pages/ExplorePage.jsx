@@ -8,6 +8,7 @@ import { Link } from 'react-router';
 import { useInView } from 'react-intersection-observer'
 import EventFilterBar from '@/Components/Events/EventFilterBar';
 import { useSelector } from 'react-redux';
+import { useEventFilters } from '@/hooks/useEventFIlters';
 
 export default function ExplorePage() {
 
@@ -16,28 +17,20 @@ export default function ExplorePage() {
   const [isMoreLoading, setIsMoreLoading] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, total: 0, hasMore: false, totalPages: 1, })
 
-  const filters = useSelector((state) => state.filters)
   
   const activeRequestId = useRef(0);
-
+  const {filters , apiQueryString} = useEventFilters();
   async function fetchEvents(page = 1, append = false) {
     const thisRequestId = ++activeRequestId.current;
 
     try {
       if (!append) setIsLoading(true);
-      const params = new URLSearchParams();
-      params.set("page" , page);
-      if(filters.format){
-        params.set("format" , filters.format)
-      }
-      if(filters.isPaid !== ""){
-        params.set("isPaid" , filters.isPaid)
-      }
+      
 
 
       const { data: events, pagination } = await api.get(
-        `/api/events?&limit=12&${params.toString()}`
-      );
+      `/api/events?${apiQueryString({ page, limit: 12 })}`
+    );
       if (thisRequestId !== activeRequestId.current) {
         return;
       }
@@ -56,7 +49,7 @@ export default function ExplorePage() {
 
   useEffect(() => {
     fetchEvents(1, false);
-  }, [filters.format , filters.isPaid])
+  }, [filters.format, filters.isPaid])
 
   const { ref: observerRef, inView } = useInView({
     threshold: 0.5

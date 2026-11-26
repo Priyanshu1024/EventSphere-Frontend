@@ -1,18 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { setEntry, setFormat } from "@/store/slice/filterSlice";
 import { Search, MapPin, Calendar, RotateCcw, Tag, ChevronDown, ChevronRight } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router";
+import { useEventFilters } from "@/hooks/useEventFIlters";
 
 const ALLOWED_FORMATS = ["", "in-person", "online", "hybrid"];
 
 export default function EventFilterBar() {
-  const dispatch = useDispatch();
-  const activeFormat = useSelector((state) => state.filters.format);
-  const filters = useSelector((state) => state.filters);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const dispatch = useDispatch()
+  const { updateParams, searchParams, filters } = useEventFilters();
+  const [categories , setCategories] = useState([])
 
-  const activeEntry = searchParams.get("isPaid")
+  const activeFormat = ALLOWED_FORMATS.includes(filters.format) ? filters.format : "";
+
+
+
+
+
+  const activeEntry = filters.isPaid;
   // URL → Redux sync (runs on mount and whenever URL changes)
   useEffect(() => {
     const raw = searchParams.get("format") ?? "";
@@ -24,32 +29,16 @@ export default function EventFilterBar() {
 
   // Redux → URL sync (on click), preserving other params
   const handleFormatClick = (f) => {
-    dispatch(setFormat(f));
-    const params = new URLSearchParams(searchParams);
-    if (f) params.set("format", f);
-    else params.delete("format");
-    setSearchParams(params, { replace: true });
+    updateParams({ format: f });
   };
 
-  function updateParams(updates) {
-    const params = new URLSearchParams(searchParams);
-    Object.entries(updates).forEach(([key, val]) => {
-      if (val !== undefined && val !== "" && val !== null) {
-        params.set(key, String(val));
-      } else {
-        params.delete(key);
-      }
-    });
-    setSearchParams(params);
-  }
 
 
 
-  function handleEntry(entry) {
-    dispatch(setEntry(entry));
-    updateParams({ isPaid: entry });
-  }
 
+  const handleEntry = (entry) => {
+    updateParams({ isPaid: entry === "" ? "" : String(entry) });
+  };
   return (
     <div className="space-y-4">
       {/* Top Search & Primary Filters Row */}
@@ -245,8 +234,8 @@ export default function EventFilterBar() {
             type="button"
             onClick={() => handleEntry("")}
             className={`px-2.5 py-1 rounded-lg border text-xs font-medium transition-all cursor-pointer ${filters.isPaid === ""
-                ? "bg-stone-800 text-white border-stone-800"
-                : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
+              ? "bg-stone-800 text-white border-stone-800"
+              : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
               }`}
           >
             All
@@ -256,8 +245,8 @@ export default function EventFilterBar() {
             type="button"
             onClick={() => handleEntry(false)}
             className={`px-2.5 py-1 rounded-lg border text-xs font-medium transition-all cursor-pointer ${filters.isPaid === false
-                ? "bg-emerald-700 text-white border-emerald-700"
-                : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
+              ? "bg-emerald-700 text-white border-emerald-700"
+              : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
               }`}
           >
             Free
@@ -267,8 +256,8 @@ export default function EventFilterBar() {
             type="button"
             onClick={() => handleEntry(true)}
             className={`px-2.5 py-1 rounded-lg border text-xs font-medium transition-all cursor-pointer ${filters.isPaid === true
-                ? "bg-stone-800 text-white border-stone-800"
-                : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
+              ? "bg-stone-800 text-white border-stone-800"
+              : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
               }`}
           >
             Paid
