@@ -141,6 +141,7 @@ export default function EventFilterBar() {
           <MapPin className="text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5" />
           <select
             name="city"
+            value={filters.city !== "" ? filters.city : "All Locations"}
             onChange={(e) => handleChangeCity(e.target.value)}
             className="w-full pl-8 pr-7 py-2 text-xs font-medium rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] focus:border-[#E65100] outline-none text-stone-800 appearance-none cursor-pointer"
           >
@@ -150,6 +151,9 @@ export default function EventFilterBar() {
                return <option  key={i} value={city}>{city === "All" ? "All Locations" : city}</option>
               })
             }
+             {!CITIES.includes(filters.city) && (
+              <option value={filters.city}>{filters.city}</option>
+            )}
             
           </select>
           <ChevronDown className="text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5" />
