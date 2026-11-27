@@ -49,7 +49,7 @@ export default function ExplorePage() {
 
   useEffect(() => {
     fetchEvents(1, false);
-  }, [filters.format, filters.isPaid , filters.category])
+  }, [filters.format, filters.isPaid , filters.category, filters.search])
 
   const { ref: observerRef, inView } = useInView({
     threshold: 0.5

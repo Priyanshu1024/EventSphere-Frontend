@@ -27,7 +27,8 @@ export function useEventFilters() {
     params.set("limit", String(limit));   // ← add this line
     if (filters.format) params.set("format", filters.format);
     if (filters.isPaid !== "") params.set("isPaid", String(filters.isPaid));
-    if(filters.category) params.set("category" , String(filters.category))
+    if(filters.category) params.set("category" , String(filters.category));
+    if(filters.search) params.set("search" ,String(filters.search) )
     return params.toString();
 }
 

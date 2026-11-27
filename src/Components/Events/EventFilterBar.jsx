@@ -4,6 +4,7 @@ import { Search, MapPin, Calendar, RotateCcw, Tag, ChevronDown, ChevronRight } f
 import { useDispatch, useSelector } from "react-redux";
 import { useEventFilters } from "@/hooks/useEventFIlters";
 import api from "@/lib/axios";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const ALLOWED_FORMATS = ["", "in-person", "online", "hybrid"];
 
@@ -13,7 +14,7 @@ export default function EventFilterBar() {
   const [categories, setCategories] = useState([]);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [searchVal , setSearchVal] = useState(filters.search)
-
+  const debouncedValue = useDebounce(searchVal, 350);
   const activeFormat = ALLOWED_FORMATS.includes(filters.format) ? filters.format : "";
   const activeCategory = filters.category;
   
@@ -24,59 +25,7 @@ export default function EventFilterBar() {
     }, 0);
   }, [categories]);
 
-  // bhai  future me looking at it and confusing , suen lahi dhyan se e bas sirji padhwai rahthin thik isliye likhal chhhai thik naa isliye ispe confuse mat ho thik. keep learning and keep growing
-
-  // function searchEvent(query){
-    
-  // }
-
-  // function debounce(fn , delay){
-  //   let timer;
-  //   return function (...args){
-  //     clearTimeout(timer);
-  //     timer = setTimeout(() => {
-  //       fn(...args);
-  //     },delay)
-      
-  //   }
-  // }
-
-  // const debouncedSearch = debounce(searchEvent , 350)
-
-  // debouncedSearch()
-
-
-  // This is throttling ok now i am gonna write throttling code
-
-  // function throttle(fn , delay){
-  //   let shouldWait = false;
-  //   return function (...args){
-
-  //     fn(...args);
-  //     shouldWait = True;
-  //     setTimeout(() => {
-  //       shouldWait = false;
-  //     }, delay);
-  //   }
-  // }
-
-
-  // timestamp based approach
-
-  // function throttle(fn , delay){
-  //   let lastExecuted = 0;
-  //   return function (...args){
-  //     let now = Date.now();
-
-  //     if(now - lastExecuted >= delay){
-  //       fn(...args);
-  //       lastExecuted = now;
-  //     }
-      
-  //   }
-  // }
-
-  //  Debouncing and Throttling done 
+  //  Debouncing and Throttling done check in useDebouncing and useThrottling hooks
 
   const activeEntry = filters.isPaid;
   // URL → Redux sync (runs on mount and whenever URL changes)
@@ -93,6 +42,11 @@ export default function EventFilterBar() {
     updateParams({ format: f });
   };
 
+  function handleSearch(e){
+    e.preventDefault()
+    updateParams({search : searchVal.trim()});
+  }
+
   async function fetchCategories() {
     setIsCategoriesLoading(true);
     try {
@@ -107,6 +61,12 @@ export default function EventFilterBar() {
 
   }, [])
 
+  useEffect(() => {
+    if(searchVal.trim()){
+      updateParams({search : debouncedValue.trim()});
+    }
+  }, [debouncedValue])
+
 
   const handleEntry = (entry) => {
     updateParams({ isPaid: entry === "" ? "" : String(entry) });
@@ -118,9 +78,10 @@ export default function EventFilterBar() {
         {/* Search Input */}
         <div className="relative flex-1">
           <Search className="text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 text-xs w-4 h-4" />
-          <form>
+          <form onSubmit={handleSearch}>
             <input
               type="text"
+              value={searchVal}
               onChange={(e) => {
                 setSearchVal(e.target.value)
               }}
