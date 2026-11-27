@@ -1,16 +1,50 @@
-# React + Vite
+# EventSphere Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+India's Curated Community Conclaves Extraordinary gatherings for curious minds.
 
-Currently, two official plugins are available:
+## Screenshots
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Screenshots
 
-## React Compiler
+### Home page
+![Explore page with event cards](./src/assets/Screenshot%202026-11-27%20195307.png)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Explore page
+![Explore page with event cards](./src/assets/Screenshot%202026-11-27%20195425.png)
 
-## Expanding the ESLint configuration
+## About
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+EventSphere lets users browse curated events, search by topic or venue, and filter by city, category, format, and price. This repo contains the client-side application; it talks to a separate backend API for event and category data.
+
+## Tech Stack
+
+- React
+- Vite
+- Tailwind CSS
+- React Router
+- Redux Toolkit
+- Axios
+- lucide-react for icons
+- react-intersection-observer for infinite scroll
+
+## Features
+
+- Event listing with infinite scroll pagination
+- Search across topics, categories, artists, and venues
+- City filter
+- Category pills with event counts
+- Format filter (in-person, online, hybrid)
+- Pricing filter (all, free, paid)
+- Sort options for date, price, and title
+- Debounced search input
+- Skeleton loading states
+- Responsive layout
+
+
+
+### Installation
+
+```bash
+git clone https://github.com/Priyanshu1024/EventSphere-Frontend.git
+cd EventSphere-Frontend
+npm install
