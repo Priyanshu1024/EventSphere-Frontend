@@ -8,6 +8,7 @@ export function useEventFilters() {
         isPaid : isPaidParams  === "true" ? true : isPaidParams === "false" ? false : "" ,
         category : searchParams.get("category") || "",
         search : searchParams.get("search") || "",
+        city : searchParams.get("city") || "",
     }
     function updateParams(updates) {
         const params = new URLSearchParams(searchParams);
@@ -29,6 +30,7 @@ export function useEventFilters() {
     if (filters.isPaid !== "") params.set("isPaid", String(filters.isPaid));
     if(filters.category) params.set("category" , String(filters.category));
     if(filters.search) params.set("search" ,String(filters.search) )
+    if(filters.city) params.set("city" ,String(filters.city) )
     return params.toString();
 }
 

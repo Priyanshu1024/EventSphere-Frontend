@@ -1,12 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { setEntry, setFormat } from "@/store/slice/filterSlice";
-import { Search, MapPin, Calendar, RotateCcw, Tag, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, MapPin, Calendar, RotateCcw, Tag, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEventFilters } from "@/hooks/useEventFIlters";
 import api from "@/lib/axios";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const ALLOWED_FORMATS = ["", "in-person", "online", "hybrid"];
+const CITIES = [
+  "All",
+  "Bengaluru",
+  "Mumbai",
+  "Delhi NCR",
+  "Pune",
+  "Hyderabad",
+  "Jaipur",
+  "Goa",
+  "Kolkata",
+  "Ahmedabad",
+  "Chennai",
+  "Chandigarh",
+];
 
 export default function EventFilterBar() {
   const dispatch = useDispatch()
@@ -47,6 +61,15 @@ export default function EventFilterBar() {
     updateParams({search : searchVal.trim()});
   }
 
+  function clearSearch(e){
+    e.preventDefault();
+    setSearchVal("")
+    updateParams({search : ""})
+  }
+  function handleChangeCity(city){
+    updateParams({city : city === "All" ? "" : city })
+  }
+
   async function fetchCategories() {
     setIsCategoriesLoading(true);
     try {
@@ -62,8 +85,9 @@ export default function EventFilterBar() {
   }, [])
 
   useEffect(() => {
-    if(searchVal.trim()){
-      updateParams({search : debouncedValue.trim()});
+     const trimmedValue = debouncedValue.trim();
+    if (trimmedValue !== filters.search) {
+      updateParams({ search: trimmedValue });
     }
   }, [debouncedValue])
 
@@ -71,6 +95,10 @@ export default function EventFilterBar() {
   const handleEntry = (entry) => {
     updateParams({ isPaid: entry === "" ? "" : String(entry) });
   };
+
+   const isDebouncing = searchVal.trim() !== filters.search.trim();
+
+
   return (
     <div className="space-y-4">
       {/* Top Search & Primary Filters Row */}
@@ -87,9 +115,25 @@ export default function EventFilterBar() {
               }}
               name="search"
               placeholder="Search by topic, category, artist, city, or venue..."
-              className="w-full pl-9 pr-9 py-2 text-sm rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] focus:bg-white focus:border-[#E65100] focus:ring-2 focus:ring-[#E65100]/20 text-[#111] placeholder-stone-400 outline-none transition-all"
+              className={`w-full pl-9 py-2 text-sm rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] focus:bg-white focus:border-[#E65100] focus:ring-2 focus:ring-[#E65100]/20 text-[#111] placeholder-stone-400 outline-none transition-all ${isDebouncing ? "pr-15" : "pr-9"}`}
             />
           </form>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            {isDebouncing && (
+              <span className="w-3.5 h-3.5 border-2 border-stone-300 border-t-[#E65100] rounded-full animate-spin" />
+            )}
+
+            {searchVal && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                aria-label="Clear search"
+                className="text-stone-400 hover:text-stone-700 transition-colors p-0.5 rounded cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* City Filter */}
@@ -97,20 +141,16 @@ export default function EventFilterBar() {
           <MapPin className="text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5" />
           <select
             name="city"
+            onChange={(e) => handleChangeCity(e.target.value)}
             className="w-full pl-8 pr-7 py-2 text-xs font-medium rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] focus:border-[#E65100] outline-none text-stone-800 appearance-none cursor-pointer"
           >
-            <option value="All">All Locations</option>
-            <option value="Bengaluru">Bengaluru</option>
-            <option value="Mumbai">Mumbai</option>
-            <option value="Delhi NCR">Delhi NCR</option>
-            <option value="Pune">Pune</option>
-            <option value="Hyderabad">Hyderabad</option>
-            <option value="Jaipur">Jaipur</option>
-            <option value="Goa">Goa</option>
-            <option value="Kolkata">Kolkata</option>
-            <option value="Ahmedabad">Ahmedabad</option>
-            <option value="Chennai">Chennai</option>
-            <option value="Chandigarh">Chandigarh</option>
+           
+            {
+              CITIES.map((city , i) => {
+               return <option  key={i} value={city}>{city === "All" ? "All Locations" : city}</option>
+              })
+            }
+            
           </select>
           <ChevronDown className="text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5" />
         </div>
