@@ -4,7 +4,7 @@ India's Curated Community Conclaves Extraordinary gatherings for curious minds.
 
 ## Screenshots
 
-## Screenshots
+
 
 ### Home page
 ![Explore page with event cards](./src/assets/Screenshot%202026-11-27%20195307.png)
