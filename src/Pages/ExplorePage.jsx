@@ -22,14 +22,14 @@ export default function ExplorePage() {
   const {filters , apiQueryString} = useEventFilters();
   async function fetchEvents(page = 1, append = false) {
     const thisRequestId = ++activeRequestId.current;
-
+    let str = [`${apiQueryString()}`, `page=${page}`].filter(Boolean).join("&")
     try {
       if (!append) setIsLoading(true);
       
 
 
       const { data: events, pagination } = await api.get(
-      `/api/events?${apiQueryString({ page, limit: 12 })}`
+      `/api/events?${str}`
     );
       if (thisRequestId !== activeRequestId.current) {
         return;
@@ -49,7 +49,7 @@ export default function ExplorePage() {
 
   useEffect(() => {
     fetchEvents(1, false);
-  }, [filters.format, filters.isPaid])
+  }, [filters.format, filters.isPaid , filters.category])
 
   const { ref: observerRef, inView } = useInView({
     threshold: 0.5
@@ -138,7 +138,9 @@ export default function ExplorePage() {
               <span>Unfolding more community gatherings...</span>
             </div>
           ) : (
-            <p className="text-[11px] text-stone-400">
+            events.length == 0 ? <p className="text-[11px] text-stone-400">
+              No Events are there for your preferences
+            </p> : <p className="text-[11px] text-stone-400">
               You've Unfolded all the gatherings
             </p>
           )}

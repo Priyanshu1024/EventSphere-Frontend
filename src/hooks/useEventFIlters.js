@@ -6,6 +6,8 @@ export function useEventFilters() {
     const filters = {
         format : searchParams.get("format") || "" , 
         isPaid : isPaidParams  === "true" ? true : isPaidParams === "false" ? false : "" ,
+        category : searchParams.get("category") || "",
+        search : searchParams.get("search") || "",
     }
     function updateParams(updates) {
         const params = new URLSearchParams(searchParams);
@@ -25,6 +27,7 @@ export function useEventFilters() {
     params.set("limit", String(limit));   // ← add this line
     if (filters.format) params.set("format", filters.format);
     if (filters.isPaid !== "") params.set("isPaid", String(filters.isPaid));
+    if(filters.category) params.set("category" , String(filters.category))
     return params.toString();
 }
 

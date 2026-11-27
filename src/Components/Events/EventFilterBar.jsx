@@ -1,39 +1,111 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { setEntry, setFormat } from "@/store/slice/filterSlice";
 import { Search, MapPin, Calendar, RotateCcw, Tag, ChevronDown, ChevronRight } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEventFilters } from "@/hooks/useEventFIlters";
+import api from "@/lib/axios";
 
 const ALLOWED_FORMATS = ["", "in-person", "online", "hybrid"];
 
 export default function EventFilterBar() {
   const dispatch = useDispatch()
   const { updateParams, searchParams, filters } = useEventFilters();
-  const [categories , setCategories] = useState([])
+  const [categories, setCategories] = useState([]);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
+  const [searchVal , setSearchVal] = useState(filters.search)
 
   const activeFormat = ALLOWED_FORMATS.includes(filters.format) ? filters.format : "";
+  const activeCategory = filters.category;
+  
+
+  const totalCategories = useMemo(() => {
+    return categories.reduce((acc, currentVal) => {
+      return acc + (Number(currentVal.eventCount) || 0);
+    }, 0);
+  }, [categories]);
+
+  // bhai  future me looking at it and confusing , suen lahi dhyan se e bas sirji padhwai rahthin thik isliye likhal chhhai thik naa isliye ispe confuse mat ho thik. keep learning and keep growing
+
+  // function searchEvent(query){
+    
+  // }
+
+  // function debounce(fn , delay){
+  //   let timer;
+  //   return function (...args){
+  //     clearTimeout(timer);
+  //     timer = setTimeout(() => {
+  //       fn(...args);
+  //     },delay)
+      
+  //   }
+  // }
+
+  // const debouncedSearch = debounce(searchEvent , 350)
+
+  // debouncedSearch()
 
 
+  // This is throttling ok now i am gonna write throttling code
+
+  // function throttle(fn , delay){
+  //   let shouldWait = false;
+  //   return function (...args){
+
+  //     fn(...args);
+  //     shouldWait = True;
+  //     setTimeout(() => {
+  //       shouldWait = false;
+  //     }, delay);
+  //   }
+  // }
 
 
+  // timestamp based approach
+
+  // function throttle(fn , delay){
+  //   let lastExecuted = 0;
+  //   return function (...args){
+  //     let now = Date.now();
+
+  //     if(now - lastExecuted >= delay){
+  //       fn(...args);
+  //       lastExecuted = now;
+  //     }
+      
+  //   }
+  // }
+
+  //  Debouncing and Throttling done 
 
   const activeEntry = filters.isPaid;
   // URL → Redux sync (runs on mount and whenever URL changes)
-  useEffect(() => {
-    const raw = searchParams.get("format") ?? "";
-    const safeFormat = ALLOWED_FORMATS.includes(raw) ? raw : "";
-    if (safeFormat !== activeFormat) {
-      dispatch(setFormat(safeFormat));
-    }
-  }, [searchParams, activeFormat, dispatch]);
+  // useEffect(() => {
+  //   const raw = searchParams.get("format") ?? "";
+  //   const safeFormat = ALLOWED_FORMATS.includes(raw) ? raw : "";
+  //   if (safeFormat !== activeFormat) {
+  //     dispatch(setFormat(safeFormat));
+  //   }
+  // }, [searchParams, activeFormat, dispatch]);
 
   // Redux → URL sync (on click), preserving other params
   const handleFormatClick = (f) => {
     updateParams({ format: f });
   };
 
+  async function fetchCategories() {
+    setIsCategoriesLoading(true);
+    try {
+      let { data } = await api.get("/api/categories");
+      setCategories(data);
+    } catch (error) { }
+    setIsCategoriesLoading(false);
+  }
 
+  useEffect(() => {
+    fetchCategories();
 
+  }, [])
 
 
   const handleEntry = (entry) => {
@@ -49,6 +121,9 @@ export default function EventFilterBar() {
           <form>
             <input
               type="text"
+              onChange={(e) => {
+                setSearchVal(e.target.value)
+              }}
               name="search"
               placeholder="Search by topic, category, artist, city, or venue..."
               className="w-full pl-9 pr-9 py-2 text-sm rounded-xl bg-[#FAF9F5] border border-[#DDD9CE] focus:bg-white focus:border-[#E65100] focus:ring-2 focus:ring-[#E65100]/20 text-[#111] placeholder-stone-400 outline-none transition-all"
@@ -140,73 +215,58 @@ export default function EventFilterBar() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-[#1a1a1a] text-white shadow-sm"
+          onClick={() => updateParams({ category: "" })}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 ${activeCategory === ""
+            ? "bg-stone-800 text-white border-stone-800"
+            : "bg-white border-[#DDD9CE] text-stone-600 hover:bg-stone-50"
+            }`}
         >
-          <span>All Disciplines</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-white/20 text-white">
-            42
+          <span>All Categories</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-200 text-stone-700">
+            {totalCategories}
           </span>
         </button>
 
-        <button
-          type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-white hover:bg-stone-100 text-stone-600 border border-[#E2DFD4]"
-        >
-          <span>Technology & AI</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-100 text-stone-500">
-            14
-          </span>
-        </button>
+        {
+          !isCategoriesLoading ? (
+            categories.map((c) => {
+              const isActive = activeCategory === c.name;
+              return (
+                <button
+                  key={c.id || c._id}
+                  type="button"
+                  onClick={() => updateParams({ category: c.name })}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 border ${isActive
+                    ? "bg-stone-800 text-white border-stone-800"
+                    : "bg-white border-[#E2DFD4] text-stone-600 hover:bg-stone-100"
+                    }`}
+                >
+                  <span>{c.name}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-stone-100 text-stone-500"
+                      }`}
+                  >
+                    {c.eventCount || 0}
+                  </span>
+                </button>
+              );
+            })
+          ) : (
+            // skeleton pills while loading
+            [...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-7 w-28 rounded-full bg-stone-200 animate-pulse shrink-0"
+              />
+            ))
+          )
+        }
 
-        <button
-          type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-white hover:bg-stone-100 text-stone-600 border border-[#E2DFD4]"
-        >
-          <span>Live Music & Concerts</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-100 text-stone-500">
-            9
-          </span>
-        </button>
 
-        <button
-          type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-white hover:bg-stone-100 text-stone-600 border border-[#E2DFD4]"
-        >
-          <span>Startups & Venture Capital</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-100 text-stone-500">
-            8
-          </span>
-        </button>
 
-        <button
-          type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-white hover:bg-stone-100 text-stone-600 border border-[#E2DFD4]"
-        >
-          <span>Fitness & Marathons</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-100 text-stone-500">
-            5
-          </span>
-        </button>
 
-        <button
-          type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-white hover:bg-stone-100 text-stone-600 border border-[#E2DFD4]"
-        >
-          <span>Arts & Culture</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-100 text-stone-500">
-            4
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 bg-white hover:bg-stone-100 text-stone-600 border border-[#E2DFD4]"
-        >
-          <span>Workshops & Masterclasses</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-stone-100 text-stone-500">
-            2
-          </span>
-        </button>
       </div>
 
       {/* Format & Pricing Pills */}
